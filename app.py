@@ -1,6 +1,6 @@
 import streamlit as st
 import numpy as np
-import plotly.graph_objects as go
+import matplotlib.pyplot as plt
 
 # Title of the app
 st.title('Interactive Surface Modeling with Tangent Planes and Normals')
@@ -65,23 +65,14 @@ for (x0, y0) in points:
 
     tangent_planes.append((x0, y0, z0, zx, zy, normal))
 
-# Create a Plotly figure for interactive 3D plot
-fig = go.Figure()
-
-# Add surface plot
-fig.add_trace(go.Surface(
-    x=X, y=Y, z=Z,
-    colorscale='Viridis',
-    opacity=0.6,
-    showscale=False,
-))
+# Plotting the surface and normal vectors
+fig = plt.figure(figsize=(10, 7))
+ax = fig.add_subplot(111, projection='3d')
+ax.plot_surface(X, Y, Z, cmap='viridis', alpha=0.6)
 
 # Plot normal vectors
 for (x0, y0, z0, zx, zy, normal) in tangent_planes:
-    fig.add_trace(go.Cone(
-        x=[x0], y=[y0], z=[z0], u=[normal[0]], v=[normal[1]], w=[normal[2]],
-        colorscale='Reds', sizemode="absolute", showscale=False, anchor="tail", opacity=0.8
-    ))
+    ax.quiver(x0, y0, z0, normal[0], normal[1], normal[2], length=0.5, color='red')
 
 # Plot tangent planes (small patches around each selected point)
 for (x0, y0, z0, zx, zy, normal) in tangent_planes:
@@ -89,25 +80,16 @@ for (x0, y0, z0, zx, zy, normal) in tangent_planes:
     yy = np.linspace(y0 - 0.5, y0 + 0.5, 10)
     XX, YY = np.meshgrid(xx, yy)
     ZZ = z0 + zx * (XX - x0) + zy * (YY - y0)
-    fig.add_trace(go.Surface(
-        x=XX, y=YY, z=ZZ,
-        colorscale='Reds', opacity=0.3, showscale=False
-    ))
+    ax.plot_surface(XX, YY, ZZ, color='red', alpha=0.5)
 
-# Update layout for better interactivity
-fig.update_layout(
-    title='Interactive 3D Surface with Tangent Planes and Normals',
-    scene=dict(
-        xaxis_title='X Axis',
-        yaxis_title='Y Axis',
-        zaxis_title='Z Axis',
-        aspectmode='cube'
-    ),
-    margin=dict(l=0, r=0, b=0, t=50)
-)
+# Labels and title
+ax.set_xlabel('X')
+ax.set_ylabel('Y')
+ax.set_zlabel('Z')
+ax.set_title('Surface with Tangent Planes and Normal Vectors')
 
-# Show the plot
-st.plotly_chart(fig)
+# Display the plot
+st.pyplot(fig)
 
 # Show the tangent plane equations below the plot
 st.subheader('Tangent Plane Equations')
